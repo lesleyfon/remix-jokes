@@ -5,3 +5,4 @@ dist
 /build
 /public/build
 .env
+.hintrc
