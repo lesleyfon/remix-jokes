@@ -2,7 +2,7 @@ import { Joke } from "@prisma/client";
 import { LoaderArgs } from "@remix-run/node";
 import { db } from "~/utils/db.server";
 import invariant from "tiny-invariant";
-import { Link, useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData, useParams } from "@remix-run/react";
 
 type LoaderData = { joke: Joke | null };
 export const loader = async ({ params }: LoaderArgs) => {
@@ -33,6 +33,15 @@ export default function JokeRoute() {
 		<div>
 			<p>{joke.content}</p>
 			<Link to=".">{joke.name} Permalink</Link>
+		</div>
+	);
+}
+
+export function ErrorBoundary() {
+	const { jokeId } = useParams();
+	return (
+		<div className="error-container">
+			There was an error loading joke by the id "${jokeId}". Sorry.
 		</div>
 	);
 }
