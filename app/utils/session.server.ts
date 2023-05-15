@@ -1,5 +1,7 @@
 import bcrypt from "bcryptjs";
 import {
+  Session,
+  SessionData,
   createCookieSessionStorage,
   redirect,
 } from "@remix-run/node";
@@ -62,4 +64,79 @@ export async function createUserSession(
       "Set-Cookie": await storage.commitSession(session),
     },
   });
+}
+
+function getUserSession(request: Request): Promise<Session<SessionData>> {
+  return storage.getSession(request.headers.get('Cookie'))
+}
+
+export async function getUserId(request: Request) {
+  let session = await getUserSession(request)
+  let userId: string | undefined = session.get('userId');
+
+  if (!userId) {
+    return null
+  }
+
+  return userId
+}
+
+export async function requireUserId(
+  request: Request,
+  redirectTo: string = new URL(request.url).pathname
+) {
+  const session = await getUserSession(request);
+
+  const userId = session.get("userId");
+
+  if (!userId || typeof userId !== "string") {
+    const searchParams = new URLSearchParams([
+      ["redirectTo", redirectTo],
+    ]);
+    throw redirect(`/login?${searchParams}`);
+  }
+  return userId;
+}
+
+
+export async function register({
+  password,
+  username,
+}: LoginForm) {
+  const passwordHash = await bcrypt.hash(password, 10);
+  const user = await db.user.create({
+    data: { passwordHash, username },
+  });
+  return { id: user.id, username };
+}
+
+export async function logout(request: Request) {
+
+
+  const session = await getUserSession(request);
+
+  return redirect('/jokes', {
+    headers: {
+      'Set-Cookie': await storage.destroySession(session, {
+        expires: new Date(0)
+      })
+    }
+  })
+}
+
+export async function getUser(request: Request) {
+  const userId = await getUserId(request);
+  if (typeof userId !== "string") {
+    return null;
+  }
+
+  try {
+    const user = await db.user.findUnique({
+      select: { id: true, username: true, createdAt: true, updatedAt: true, passwordHash: true },
+      where: { id: userId },
+    });
+    return user;
+  } catch {
+    throw logout(request);
+  }
 }
