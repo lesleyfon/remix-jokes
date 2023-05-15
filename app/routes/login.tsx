@@ -83,6 +83,7 @@ export const action = async ({ request }: ActionArgs) => {
 			const userExists = await db.user.findFirst({
 				where: { username },
 			});
+
 			if (userExists) {
 				return badRequest({
 					fieldErrors: null,
@@ -90,6 +91,7 @@ export const action = async ({ request }: ActionArgs) => {
 					formError: `User with username ${username} already exists`,
 				});
 			}
+
 			// create the user
 			// create their session and redirect to /jokes
 			return badRequest({
@@ -111,6 +113,7 @@ export const action = async ({ request }: ActionArgs) => {
 export default function Login() {
 	const actionData = useActionData<typeof action>();
 	const [searchParams] = useSearchParams();
+
 	return (
 		<div className="container">
 			<div className="content" data-light="">
@@ -132,7 +135,7 @@ export default function Login() {
 									!actionData?.fields?.loginType ||
 									actionData?.fields?.loginType === "login"
 								}
-							/>{" "}
+							/>
 							Login
 						</label>
 						<label>
@@ -141,7 +144,7 @@ export default function Login() {
 								name="loginType"
 								value="register"
 								defaultChecked={actionData?.fields?.loginType === "register"}
-							/>{" "}
+							/>
 							Register
 						</label>
 					</fieldset>
