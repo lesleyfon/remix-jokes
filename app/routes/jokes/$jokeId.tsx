@@ -1,5 +1,5 @@
 import { Joke } from "@prisma/client";
-import { ActionArgs, LoaderArgs, json, redirect } from "@remix-run/node";
+import { ActionArgs, LoaderArgs, V2_MetaFunction, json, redirect } from "@remix-run/node";
 import { db } from "~/utils/db.server";
 import invariant from "tiny-invariant";
 import {
@@ -61,6 +61,21 @@ export const loader = async ({ params, request }: LoaderArgs) => {
 		isOwner: userId === joke.jokesterId,
 		joke,
 	});
+};
+
+export const meta: V2_MetaFunction<typeof loader> = ({ data }) => {
+	const { description, title } = data
+		? {
+				description: `Enjoy the "${data.joke.name}" joke and much more`,
+				title: `"${data.joke.name}" joke`,
+		  }
+		: { description: "No joke found", title: "No joke" };
+
+	return [
+		{ name: "description", content: description },
+		{ name: "twitter:description", content: description },
+		{ title },
+	];
 };
 
 export default function JokeRoute() {
