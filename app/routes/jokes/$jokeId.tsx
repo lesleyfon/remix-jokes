@@ -10,6 +10,7 @@ import {
 	useRouteError,
 } from "@remix-run/react";
 import { getUserId, requireUserId } from "~/utils/session.server";
+import { JokeDisplay } from "~/components/joke";
 
 export const action = async ({ params, request }: ActionArgs) => {
 	const form = await request.formData();
@@ -79,23 +80,9 @@ export const meta: V2_MetaFunction<typeof loader> = ({ data }) => {
 };
 
 export default function JokeRoute() {
-	const { joke, isOwner } = useLoaderData<typeof loader>();
+	const data = useLoaderData<typeof loader>();
 
-	invariant(joke, "Error, no Joke");
-
-	return (
-		<div>
-			<p>{joke.content}</p>
-			<Link to=".">{joke.name} Permalink</Link>
-			{isOwner ? (
-				<form method="post">
-					<button className="button" name="intent" type="submit" value="delete">
-						Delete
-					</button>
-				</form>
-			) : null}
-		</div>
-	);
+	return <JokeDisplay isOwner={data.isOwner} joke={data.joke} />;
 }
 
 export function ErrorBoundary() {

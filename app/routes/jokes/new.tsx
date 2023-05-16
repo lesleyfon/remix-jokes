@@ -1,7 +1,14 @@
 import { ActionArgs, ActionFunction, FormData, LoaderArgs, redirect, json } from "@remix-run/node";
-import { isRouteErrorResponse, Link, useActionData, useRouteError } from "@remix-run/react";
+import {
+	isRouteErrorResponse,
+	Link,
+	useActionData,
+	useNavigation,
+	useRouteError,
+} from "@remix-run/react";
 import { db } from "~/utils/db.server";
 import { getUserId, requireUserId } from "~/utils/session.server";
+import { JokeDisplay } from "~/components/joke";
 
 const validateJokeName = (name: string) => {
 	if (name.length < 3) {
@@ -60,6 +67,21 @@ export const action: ActionFunction = async ({
 
 export default function NewJokeRoute() {
 	const actionData = useActionData<ActionData | undefined>();
+
+	const navigation = useNavigation();
+
+	if (navigation.formData) {
+		const content = navigation.formData.get("content");
+		const name = navigation.formData.get("name");
+		if (
+			typeof content === "string" &&
+			typeof name === "string" &&
+			!validateJokeContent(content) &&
+			!validateJokeName(name)
+		) {
+			return <JokeDisplay canDelete={false} isOwner={true} joke={{ name, content }} />;
+		}
+	}
 
 	return (
 		<div>
